@@ -341,6 +341,8 @@ def main():
     window = Main()
     window.show()
     sys.exit(app.exec())
+    print("hellow")
+    
 
 
 if __name__ == '__main__':
