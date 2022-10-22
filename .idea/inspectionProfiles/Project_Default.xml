@@ -8,6 +8,7 @@
           <option value="PySide6.QtWidgets.currentIndexChanged.connect" />
           <option value="PySide6.QtWidgets.QPushButton.clicked" />
           <option value="PySide6.QtCore.timeout.connect" />
+          <option value="PySide6.QtWidgets.currentCellChanged.*" />
         </list>
       </option>
     </inspection_tool>

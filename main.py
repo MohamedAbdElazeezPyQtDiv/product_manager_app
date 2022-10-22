@@ -26,7 +26,7 @@ class Main(QMainWindow):
         self.central_widget.setLayout(self.mainLayout)
 
         # -- toolbar
-        self.tb = QToolBar('tool bar')
+        self.tb = QToolBar(self, 'tool bar')
         self.tb.setFixedHeight(50)
         self.tb.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.addToolBar(self.tb)
@@ -81,7 +81,7 @@ class Main(QMainWindow):
         self.searchButton.clicked.connect(self.search_product)
         self.productsMainRightLayout.addWidget(self.searchButton, 0, 1, Qt.AlignVCenter)
 
-        self.filterGroupBox = QGroupBox('Filter')
+        self.filterGroupBox = QGroupBox(self, 'Filter')
         self.productsMainRightLayout.addWidget(self.filterGroupBox, 1, 0, 1, 1, Qt.AlignVCenter)
         self.filterLayout = QVBoxLayout()
         self.filterGroupBox.setLayout(self.filterLayout)
@@ -96,11 +96,12 @@ class Main(QMainWindow):
         self.productsMainRightLayout.addWidget(self.filterButton, 1, 1, Qt.AlignVCenter)
 
         # options label
+        # noinspection PyTypeChecker
         self.productLabel = QLabel('Options')
         self.productsMainRightLayout.addWidget(self.productLabel, 2, 0, 1, 3, Qt.AlignHCenter)
         self.productsTable.currentCellChanged.connect(
-                lambda: self.productLabel.setText(f"Product: {self.productsTable.currentItem().text()}")
-                if self.productsTable.currentColumn() == 1 else self.productLabel.setText('options'))
+            lambda: self.productLabel.setText(f"Product: {self.productsTable.currentItem().text()}")
+            if self.productsTable.currentColumn() == 1 else self.productLabel.setText('options'))
         self.productLabel.setFont(QFont('times', 14, 5))
 
         # options layout
@@ -114,7 +115,7 @@ class Main(QMainWindow):
         self.sellProduct.setIcon(QIcon("icons/options/sell_product.png"))
         self.sellProduct.setIconSize(QSize(48, 48))
         self.sellProduct.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        self.sellProductGroupbox = QGroupBox('sell')
+        self.sellProductGroupbox = QGroupBox(self, 'sell')
         # sell signal
         self.sellProduct.clicked.connect(lambda: self.product_option(option='sell'))
 
@@ -129,7 +130,7 @@ class Main(QMainWindow):
         self.editProduct.setIcon(QIcon("icons/options/edit_product.png"))
         self.editProduct.setIconSize(QSize(48, 48))
         self.editProduct.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        self.editProductGroupbox = QGroupBox('Edit')
+        self.editProductGroupbox = QGroupBox(self, 'Edit')
         # edit signal
         self.editProduct.clicked.connect(lambda: self.product_option(option='edit'))
 
@@ -175,7 +176,7 @@ class Main(QMainWindow):
         # signals
         self.editProductSaveButton.clicked.connect(lambda: self.product_option(option='save edit'))
         self.productsTable.currentCellChanged.connect(lambda: self.product_option(
-                'edit') if self.editProductGroupbox.isVisible() else self.editProductGroupbox.close())
+            'edit') if self.editProductGroupbox.isVisible() else self.editProductGroupbox.close())
 
         # -sell product group box
         # layout
@@ -237,7 +238,8 @@ class Main(QMainWindow):
         else:
             pass
 
-    def show_table_data(self, table_widget: QTableWidget, data: list, rows_num: int, columns_num: int) -> None:
+    @staticmethod
+    def show_table_data(table_widget: QTableWidget, data: list, rows_num: int, columns_num: int) -> None:
         table_widget.clearContents()
         for r in range(rows_num):
             for c in range(columns_num):
@@ -271,6 +273,8 @@ class Main(QMainWindow):
         if self.productsTable.currentColumn() == 1:
             self.productLabel.setText(self.productsTable.currentItem().text())
         current_product_id = self.productsTable.item(self.productsTable.currentRow(), 0).text()
+        member_id = self.appDatabase.get_member_details(data_type='id',
+                                                        member_name=self.sellProductCombBox.currentText())
         if option == 'add':
             pass
         elif option == 'sell':
@@ -280,8 +284,7 @@ class Main(QMainWindow):
             self.appDatabase.sell_product(current_product_id, int(self.sellProductLineEdit.text()))
             if self.sellProductCheckBox.isChecked():
                 self.sellProductCombBox.setEnabled(True)
-                self.appDatabase.add_product_to_member(member_id=self.appDatabase.get_member_details(data_type='id',
-                                                                                                     member_name=self.sellProductCombBox.currentText()),
+                self.appDatabase.add_product_to_member(member_id=member_id,
                                                        product_id=current_product_id,
                                                        quantity=int(self.sellProductLineEdit.text()))
             self.refresh_table(table_widget=self.productsTable, database_table_name='Products')
@@ -294,7 +297,7 @@ class Main(QMainWindow):
             self.editProductStock.setText(str(self.appDatabase.product_details(current_product_id, 'stock')))
             self.editProductPrice.setText(str(self.appDatabase.product_details(current_product_id, 'price')))
             self.editProductAvailability.setCurrentText(
-                    'Available' if self.appDatabase.product_is_available(current_product_id) else 'Un Available')
+                'Available' if self.appDatabase.product_is_available(current_product_id) else 'Un Available')
         elif option == 'save edit':
             msg = QMessageBox.warning(self, 'Save', "Are you sure to save?'",
                                       QMessageBox.Yes | QMessageBox.Cancel, QMessageBox.Cancel)
@@ -328,6 +331,7 @@ class Main(QMainWindow):
         for i in range(len(self.appDatabase.statistics().items())):
             self.statisticsTabLayout.removeRow(0)
         for key, value in self.appDatabase.statistics().items():
+            # noinspection PyTypeChecker
             self.statisticsTabLayout.addRow(key, QLabel(f'{value}'))
 
     def closeEvent(self, event) -> None:
@@ -340,9 +344,8 @@ def main():
     app = QApplication(sys.argv)
     window = Main()
     window.show()
-    sys.exit(app.exec())
     print("hello")
-
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':
